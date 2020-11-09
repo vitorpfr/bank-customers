@@ -2,4 +2,4 @@
   (:require [bank-customers.components :as components]))
 
 (defn -main [& args]
-  (components/start-all))
+  (components/start-system :prod))

@@ -1,6 +1,25 @@
 (ns bank-customers.schemata.in
   (:require [schema.core :as s]))
 
-(def TaxId s/Str)
-(s/defschema TaxIds [[(s/one TaxId "s")]])
+(defn- valid-tax-id?
+  [tax-id]
+  (and (string? tax-id)
+       (every? #(Character/isDigit %) tax-id)
+       (= 11 (count tax-id))))
 
+(def TaxId (s/pred valid-tax-id?))
+
+(s/defschema TaxIds (s/both [[(s/one TaxId "s")]]
+                            (s/pred vector?)))
+
+(defn- valid-email?
+  [email]
+  (re-find #"@.*?\." email))
+
+(def Email (s/pred valid-email?))
+
+(s/defschema Customer (s/both [[(s/one s/Str "name")
+                                (s/one Email "email")
+                                (s/one TaxId "tax-id")]]
+                              (s/pred vector?)
+                              (s/pred #(<= (count %) 1))))

@@ -11,4 +11,5 @@
 (s/defn get-customer :- m/Customer
   [tax-id :- m/TaxId
    db :- db-client/IDatabaseClient]
-  (ddb/get-customer tax-id db))
+  (when-let [customer (ddb/get-customer tax-id db)]
+    customer))

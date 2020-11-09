@@ -1,10 +1,18 @@
 # bank-customers
 
-A Clojure library designed to ... well, that part is up to you.
+A bank that uses Datomic as a database to store customers.
 
 ## Usage
 
-FIXME
+lein run
+
+## Available endpoints
+
+- Get tax-id of customers in database: 
+curl -X GET http://localhost:4000/customers | jq
+
+- Get data from a specific customer tax-id: 
+curl -X GET http://localhost:4000/customer?tax-id=12345678910 | jq
 
 ## License
 

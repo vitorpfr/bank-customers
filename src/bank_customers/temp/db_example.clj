@@ -45,10 +45,10 @@ conn
    :customer/tax-id tax-id})
 
 (def first-customers
-  [(new-customer "John Smith" "john@gmail.com" "123456789")
-   (new-customer "Mary Roberts" "mary@gmail.com" "123456775")])
+  [(new-customer "John Smith" "john@gmail.com" "12345678911")
+   (new-customer "Mary Roberts" "mary@gmail.com" "12345677511")])
 
-;(d/transact conn first-customers)
+(d/transact conn first-customers)
 
 ;;;;;;;;; QUERY DB ;;;;;;;;;;;;;
 ; THIS LINE SAVES THE DB IN MEMORY (in the db symbol)
@@ -82,3 +82,16 @@ conn
 
 (d/q all-data db)
 
+
+;; create in-memory DB for testing
+(defn create-empty-in-memory-db []
+  (let [uri "datomic:mem://bank-customers-test-db"]
+    (d/delete-database uri)
+    (d/create-database uri)
+    (let [conn (d/connect uri)]
+      (d/transact conn customer-schema)
+      conn)))
+
+(def conn (create-empty-in-memory-db))
+
+conn

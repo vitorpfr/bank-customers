@@ -5,6 +5,7 @@
             [schema.core :as s]
             [clojure.data.json :as json]))
 
+; should I do this in prod or use s/validate inside specific fns?
 (s/set-fn-validation! true)
 
 (s/defn tax-ids-wire->internal :- m/TaxIds
@@ -14,3 +15,14 @@
 (s/defn tax-ids-internal->wire :- schemata-out/TaxIds
   [tax-ids :- m/TaxIds]
   (json/write-str tax-ids))
+
+(s/defn customer-wire->internal :- m/Customer
+  [customer :- schemata-in/Customer]
+  (zipmap [:customer/name
+           :customer/email
+           :customer/tax-id]
+          (first customer)))
+
+(s/defn customer-internal->wire :- schemata-out/Customer
+  [customer :- m/Customer]
+  (json/write-str customer))
