@@ -23,6 +23,7 @@
     (let [response (-> (client/request {:url (aux/test-url "customers")
                                         :method :get})
                        deref)]
+      (println (:http-server @test-server))
       (is (= 200
              (:status response)))
       (is (= {"tax-ids" []}

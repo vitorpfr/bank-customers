@@ -73,7 +73,7 @@
                                                      db)
                                    deref
                                    :db-after)]
-      (is (= (d/db (:conn db))
+      (is (= (d/db (:connection db))
              db-after-transaction)))))
 
 

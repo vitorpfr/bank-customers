@@ -3,30 +3,7 @@
             [datomic.api :as d]
             [bank-customers.protocols.db-client :as db-client]))
 
-(defrecord Database [conn]
-  component/Lifecycle
-  (start [this]
-    (println "Starting database connection")
-    this)
-
-  (stop [_]
-    (println "Stopping database connection")
-    nil)
-
-  db-client/DatabaseClient
-  (query [this data]
-    (into [] (d/q data
-                  (d/db (get this :conn)))))
-
-  (query-with-arg [this arg data]
-    (into [] (d/q data
-                  (d/db (get this :conn))
-                  arg)))
-
-  (transact-entity! [this data]
-    (d/transact (get this :conn) data)))
-
-(def customer-schema
+(def ^:private customer-schema
   [{:db/ident       :customer/name
     :db/valueType   :db.type/string
     :db/cardinality :db.cardinality/one
@@ -42,14 +19,46 @@
     :db/cardinality :db.cardinality/one
     :db/doc         "Tax id of a customer"}])
 
-(defn create-empty-in-memory-db [uri schema]
+(defn connect-to-empty-in-memory-db [uri]
   (d/delete-database uri)
   (d/create-database uri)
   (let [conn (d/connect uri)]
-    (d/transact conn schema)
+    (d/transact conn customer-schema)
     conn))
 
-(defn new-db [db-uri env]
+(defn connect-to-prod-db [uri]
+  (d/connect uri))
+
+(defn connect-to-db
+  [env uri]
   (case env
-    :test (->Database (create-empty-in-memory-db db-uri customer-schema))
-    :prod (->Database (d/connect db-uri))))
+    :test (connect-to-empty-in-memory-db uri)
+    :prod (connect-to-prod-db uri)))
+
+(defrecord Database [env uri connection]
+  component/Lifecycle
+  (start [this]
+    (println "Starting database connection")
+    (let [conn (connect-to-db env uri)]
+      (assoc this :connection conn)))
+
+  (stop [this]
+    (println "Stopping database connection")
+    (assoc this :connection nil))
+
+  db-client/DatabaseClient
+  (query [this data]
+    (into [] (d/q data
+                  (d/db (get this :connection)))))
+
+  (query-with-arg [this arg data]
+    (into [] (d/q data
+                  (d/db (get this :connection))
+                  arg)))
+
+  (transact-entity! [this data]
+    (d/transact (get this :connection) data)))
+
+(defn new-db [env uri]
+  (map->Database {:env env
+                  :uri uri}))

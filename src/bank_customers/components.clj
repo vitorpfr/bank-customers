@@ -5,19 +5,19 @@
             [bank-customers.components.service :as service]))
 
 (defn new-system
-  [env {:keys [port db-uri]}]
+  [env {:keys [server-port db-uri]}]
   (component/system-map
-    :db (db/new-db db-uri env)
+    :db (db/new-db env db-uri)
     :service (component/using (service/new-service) [:db])
-    :http-server (component/using (http-server/new-server port) [:service])))
+    :http-server (component/using (http-server/new-server server-port) [:service])))
 
 (defn system [env system-config]
   (new-system env (get system-config (keyword env))))
 
 (def system-config
-  {:prod {:port 4000
+  {:prod {:server-port 4000
           :db-uri "datomic:dev://localhost:4334/bank-customers"}
-   :test {:port 8080
+   :test {:server-port 8080
           :db-uri "datomic:mem://bank-customers-test-db"}})
 
 (defn start-system [env]
