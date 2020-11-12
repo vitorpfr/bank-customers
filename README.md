@@ -4,15 +4,21 @@ A bank that uses Datomic as a database to store customers.
 
 ## Usage
 
-lein run
+Run database (in datomic folder with bank-customers db created on port 4334):
+`bin/transactor config/dev-transactor-template.properties`
+
+Run app locally: 
+`lein run`
+
+(a local 'bank-customers' datomic transactor must be running on port 4334)
 
 ## Available endpoints
 
 - Get tax-id of customers in database: 
-curl -X GET http://localhost:4000/customers | jq
+`curl -X GET http://localhost:4000/customers | jq`
 
 - Get data from a specific customer tax-id: 
-curl -X GET http://localhost:4000/customer?tax-id=12345678910 | jq
+`curl -X GET http://localhost:4000/customer?tax-id=12345678910 | jq`
 
 ## License
 

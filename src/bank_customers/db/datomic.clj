@@ -23,8 +23,7 @@
        (db-client/query-with-arg db tax-id)
        (a/customer-wire->internal)))
 
-; WORK IN PROGRESS
 (s/defn add-customer
-  [customer
+  [customer :- m/Customer
    db :- db-client/IDatabaseClient]
   (db-client/transact-entity! db [customer]))

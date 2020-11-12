@@ -16,9 +16,10 @@
   [email]
   (re-find #"@.*?\." email))
 
+(def Name s/Str)
 (def Email (s/pred valid-email?))
 
-(s/defschema Customer (s/both [[(s/one s/Str "name")
+(s/defschema Customer (s/both [[(s/one Name "name")
                                 (s/one Email "email")
                                 (s/one TaxId "tax-id")]]
                               (s/pred vector?)

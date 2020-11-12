@@ -1,4 +1,4 @@
-(ns bank-customers.temp.db-example
+(ns examples.db-example
   (:require [datomic.api :as d]))
 
 ;;;;; MODIFY DB (CREATE/DELETE) ;;;;;;;;;;;;
