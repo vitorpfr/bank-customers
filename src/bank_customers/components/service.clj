@@ -23,7 +23,7 @@
       a/tax-ids-internal->wire
       success))
 
-; should I use s/validate here or validate input schema downstream?
+; should I use s/validate here or validate user input somewhere else?
 (defn customer-handler
   [db
    {{tax-id :tax-id} :params}]
@@ -32,7 +32,7 @@
       a/customer-internal->wire
       success))
 
-; should I use s/validate here or validate input downstream?
+; should I use s/validate here or validate user input somewhere else?
 (defn add-customer-handler
   [db
    {{:keys [name email tax-id]} :body}]

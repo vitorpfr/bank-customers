@@ -5,9 +5,6 @@
             [schema.core :as s]
             [clojure.data.json :as json]))
 
-; should I do this in prod or use s/validate inside specific fns?
-(s/set-fn-validation! true)
-
 (s/defn tax-ids-wire->internal :- m/TaxIds
   [tax-ids :- schemata-in/TaxIds]
   {:tax-ids (flatten tax-ids)})
