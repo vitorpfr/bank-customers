@@ -94,3 +94,53 @@
                          :tax-id "12345678912"}
               :result   "is-customer"}
              (aux/read-json (:body response)))))))
+
+
+(deftest invalid-customer-consult
+  (testing "trying to consult customer without providing a tax-id returns error"
+    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tx-id=12345678912")
+                                        :method :get})
+                       deref)]
+      (is (= 400
+             (:status response)))
+      (is (= "A customer tax-id was not provided."
+             (:body response)))))
+
+  (testing "trying to consult customer with an invalid tax-id returns error"
+    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=178912")
+                                        :method :get})
+                       deref)]
+      (is (= 422
+             (:status response)))
+      (is (= "The tax-id provided is not valid (it must have 11 numerical digits)."
+             (:body response))))))
+
+(deftest add-invalid-customer
+  (testing "trying to add customer with missing data returns error"
+    (let [customer-missing-data {:name  "Peter Parker"
+                                 :email "peter@gmail.com"}
+          response (-> (client/request {:url     (aux/test-url "addcustomer")
+                                        :method  :post
+                                        :headers {"Content-Type" "application/json"}
+                                        :body    (aux/write-json customer-missing-data)})
+                       deref)]
+      (println response)
+      (is (= 400
+             (:status response)))
+      (is (= "One or more of the required fields (name, email, tax-id) was not provided."
+             (:body response)))))
+
+  (testing "trying to add customer with invalid data format returns error"
+    (let [invalid-customer {:name   "Peter Parker"
+                            :email  "peter@gmail.com"
+                            :tax-id "12345678"}
+          response (-> (client/request {:url     (aux/test-url "addcustomer")
+                                        :method  :post
+                                        :headers {"Content-Type" "application/json"}
+                                        :body    (aux/write-json invalid-customer)})
+                       deref)]
+      (println response)
+      (is (= 422
+             (:status response)))
+      (is (= "One or more of the required fields (name, email, tax-id) was provided in an invalid format."
+             (:body response))))))

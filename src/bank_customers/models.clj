@@ -1,15 +1,16 @@
 (ns bank-customers.models
   (:require [schema.core :as s]))
 
+(def Name s/Str)
+(def Email s/Str)
+
 (def TaxId s/Str)
 
 (s/defschema TaxIds
   {:tax-ids [TaxId]})
 
-(def Email s/Str)
-
 (s/defschema Customer
-  (s/either {:customer/name   s/Str
+  (s/either {:customer/name   Name
              :customer/email  Email
              :customer/tax-id TaxId}
             {}))
