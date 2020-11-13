@@ -1,7 +1,6 @@
 (ns bank-customers.unit.db.datomic-test
   (:require [clojure.test :refer :all]
             [bank-customers.db.datomic :as ddb]
-            [bank-customers.protocols.db-client :as db-client]
             [com.stuartsierra.component :as component]
             [bank-customers.components :as components]
             [schema.test :as s.test]
