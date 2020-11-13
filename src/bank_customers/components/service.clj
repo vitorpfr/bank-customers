@@ -12,14 +12,25 @@
    :headers {"Content-Type" "application/json"}
    :body    body-content})
 
-(def ^:private bad-request
+(defn ^:private bad-request [message]
   {:status 400
-   :body   "A tax-id is not in the request"})
+   :body   message})
 
-;TODO: move s/validates to a try/catch and returns bad-request if any of them fails
-;(defn- bad-request [missing-input]
-;  {:status  400
-;   :body    {:error (str "Input " missing-input " was not provided")}})
+(defn ^:private unprocessable-entity [message]
+  {:status 422
+   :body   message})
+
+(defn validate-user-inputs
+  [validation-map]
+  (reduce-kv (fn [acc input schema]
+               (conj acc (try (s/validate schema input)
+                              (catch Exception e))))
+             []
+             validation-map))
+
+(defn not-valid-user-inputs?
+  [validation-map]
+  (some nil? (validate-user-inputs validation-map)))
 
 (defn customers-handler
   [db _]
@@ -27,29 +38,30 @@
       a/tax-ids-internal->wire
       success))
 
-; should I use s/validate here or validate user input somewhere else?
 (defn customer-handler
   [db
    {{tax-id :tax-id} :params}]
-  (s/validate schemata-in/TaxId tax-id)
-  (-> (c/get-customer tax-id db)
-      a/customer-operation-internal->wire
-      success))
+  (cond
+    (nil? tax-id) (bad-request "A customer tax-id was not provided.")
+    (not-valid-user-inputs? {tax-id schemata-in/TaxId}) (unprocessable-entity "The tax-id provided is not valid (it must have 11 numerical digits).")
+    :else (-> (c/get-customer tax-id db)
+              a/customer-operation-internal->wire
+              success)))
 
-; should I use s/validate here or validate user input somewhere else?
 (defn add-customer-handler
   [db
    {{:keys [name email tax-id]} :body}]
-  (s/validate schemata-in/Name name)
-  (s/validate schemata-in/Email email)
-  (s/validate schemata-in/TaxId tax-id)
-  (-> (c/add-customer {:customer/name   name
-                       :customer/email  email
-                       :customer/tax-id tax-id}
-                      db)
-      a/customer-operation-internal->wire
-      success)
-  )
+  (cond
+    (or (nil? name) (nil? email) (nil? tax-id)) (bad-request "One or more of the required fields (name, email, tax-id) was not provided.")
+    (not-valid-user-inputs? {name   schemata-in/Name
+                             email  schemata-in/Email
+                             tax-id schemata-in/TaxId}) (unprocessable-entity "One or more of the required fields (name, email, tax-id) was provided in an invalid format.")
+    :else (-> (c/add-customer {:customer/name   name
+                               :customer/email  email
+                               :customer/tax-id tax-id}
+                              db)
+              a/customer-operation-internal->wire
+              success)))
 
 (defn app-routes
   [db]
