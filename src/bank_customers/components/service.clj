@@ -48,15 +48,11 @@
               a/customer-operation-internal->wire
               success)))
 
-(defn ^:private or-nil?
-  [& inputs]
-  (reduce #(or %1 %2) (map nil? inputs)))
-
 (defn add-customer-handler
   [db
    {{:keys [name email tax-id]} :body}]
   (cond
-    (or-nil? name email tax-id) (bad-request "One or more of the required fields (name, email, tax-id) was not provided.")
+    (some nil? [name email tax-id]) (bad-request "One or more of the required fields (name, email, tax-id) was not provided.")
     (not-valid-user-inputs? {name   schemata-in/Name
                              email  schemata-in/Email
                              tax-id schemata-in/TaxId}) (unprocessable-entity "One or more of the required fields (name, email, tax-id) was provided in an invalid format.")
