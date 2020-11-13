@@ -7,30 +7,52 @@ A bank that uses Datomic as a database to store customers.
 Run database (in datomic folder with bank-customers db created on port 4334):
 `bin/transactor config/dev-transactor-template.properties`
 
-Run app locally: 
+Run app locally (given that the transactor is running): 
 `lein run`
-
-(a local 'bank-customers' datomic transactor must be running on port 4334)
 
 ## Available endpoints
 
-- Get tax-id of customers in database: 
-`curl -X GET http://localhost:4000/customers | jq`
+### /customers -  get tax-id of customers in database (GET) 
+Usage: `curl -X GET http://localhost:4000/customers`
 
-- Get data from a specific customer tax-id: 
-`curl -X GET http://localhost:4000/customer?tax-id=12345678910 | jq`
+Expected response (happy path):
+```
+{
+  "tax-ids": [
+    "12345655590",
+    "12345678911",
+    "12345677511"
+  ]
+}
+```
 
-## License
+### /customer?tax-id=(number) - get data from a specific customer tax-id (GET)
+Usage: `curl -X GET http://localhost:4000/customer?tax-id=12345678910`
 
-Copyright © 2020 FIXME
+Expected response (happy path):
+```
+{
+  "customer": {
+    "name": "John Smith",
+    "email": "john@gmail.com",
+    "tax-id": "12345678911"
+  },
+  "result": "is-customer"
+}
+```
 
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
+### /addcustomer - add a customer to database (POST)
+Usage: `curl -X POST -H "Content-Type: application/json" -d @./json/customer.json http://localhost:4000/addcustomer`
+(expects a JSON payload containing name, email and tax-id of customer to be added)
 
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+Expected response (happy path): 
+```
+{
+  "customer": {
+    "name": "Peter Parker",
+    "email": "peter@gmail.com",
+    "tax-id": "12345655590"
+  },
+  "result": "customer-added-to-db"
+}
+```
