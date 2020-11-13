@@ -2,10 +2,8 @@
   (:require [clojure.test :refer :all]
             [bank-customers.components :as components]
             [com.stuartsierra.component :as component]
-            [clojure.data.json :as json]
             [schema.test :as s.test]
             [org.httpkit.client :as client]
-            [bank-customers.db.datomic :as ddb]
             [bank-customers.integration.aux :as aux]))
 
 (def test-server (atom nil))
@@ -20,50 +18,52 @@
 
 (deftest add-and-get-all-customers
   (testing "customers http request on empty db returns JSON with no tax-ids"
-    (let [response (-> (client/request {:url (aux/test-url "customers")
+    (let [response (-> (client/request {:url    (aux/test-url "customers")
                                         :method :get})
                        deref)]
       (println (:http-server @test-server))
       (is (= 200
              (:status response)))
-      (is (= {"tax-ids" []}
-             (json/read-str (:body response))))))
+      (is (= {:tax-ids []}
+             (aux/read-json (:body response))))))
 
   (testing "valid customer is added to database"
-    (let [valid-customer {:name "Peter Parker"
-                          :email "peter@gmail.com"
+    (let [valid-customer {:name   "Peter Parker"
+                          :email  "peter@gmail.com"
                           :tax-id "12345655599"}
           response (-> (client/request {:url     (aux/test-url "addcustomer")
                                         :method  :post
                                         :headers {"Content-Type" "application/json"}
-                                        :body    (json/write-str valid-customer)})
+                                        :body    (aux/write-json valid-customer)})
                        deref)]
       (println response)
       (is (= 200
              (:status response)))
-      (is (= {"name" "Peter Parker"
-              "email" "peter@gmail.com"
-              "tax-id" "12345655599"}
-             (json/read-str (:body response))))))
+      (is (= {:customer {:name   "Peter Parker"
+                         :email  "peter@gmail.com"
+                         :tax-id "12345655599"}
+              :result   "customer-added-to-db"}
+             (aux/read-json (:body response))))))
 
   (testing "customers http request on db returns JSON with one tax-id"
-    (let [response (-> (client/request {:url (aux/test-url "customers")
+    (let [response (-> (client/request {:url    (aux/test-url "customers")
                                         :method :get})
                        deref)]
       (is (= 200
              (:status response)))
-      (is (= {"tax-ids" ["12345655599"]}
-             (json/read-str (:body response)))))))
+      (is (= {:tax-ids ["12345655599"]}
+             (aux/read-json (:body response)))))))
 
 (deftest add-and-get-specific-customer
   (testing "get customer http request returns empty JSON for non-existing customer"
-    (let [response (-> (client/request {:url (aux/test-url "customer" "?tax-id=12345678912")
+    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
                                         :method :get})
                        deref)]
       (is (= 200
              (:status response)))
-      (is (= {}
-             (json/read-str (:body response))))))
+      (is (= {:customer {}
+              :result   "customer-not-found"}
+             (aux/read-json (:body response))))))
 
   (testing "valid customer is added to database"
     (let [valid-customer {:customer/name   "John"
@@ -72,23 +72,25 @@
           response (-> (client/request {:url     (aux/test-url "addcustomer")
                                         :method  :post
                                         :headers {"Content-Type" "application/json"}
-                                        :body    (json/write-str valid-customer)})
+                                        :body    (aux/write-json valid-customer)})
                        deref)]
       (println response)
       (is (= 200
              (:status response)))
-      (is (= {"name" "John"
-              "email" "john@gmail.com"
-              "tax-id" "12345678912"}
-             (json/read-str (:body response))))))
+      (is (= {:customer {:name   "John"
+                         :email  "john@gmail.com"
+                         :tax-id "12345678912"}
+              :result   "customer-added-to-db"}
+             (aux/read-json (:body response))))))
 
   (testing "get customer HTTP request returns data of existing tax-id asked"
-    (let [response (-> (client/request {:url (aux/test-url "customer" "?tax-id=12345678912")
+    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
                                         :method :get})
                        deref)]
       (is (= 200
              (:status response)))
-      (is (= {"email"  "john@gmail.com"
-              "name"   "John"
-              "tax-id" "12345678912"}
-             (json/read-str (:body response)))))))
+      (is (= {:customer {:email  "john@gmail.com"
+                         :name   "John"
+                         :tax-id "12345678912"}
+              :result   "is-customer"}
+             (aux/read-json (:body response)))))))

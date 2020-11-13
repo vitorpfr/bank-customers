@@ -13,3 +13,7 @@
              :customer/email  Email
              :customer/tax-id TaxId}
             {}))
+
+(s/defschema CustomerOperation
+  {:customer Customer
+   :result   s/Keyword})

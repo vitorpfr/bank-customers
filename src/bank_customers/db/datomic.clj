@@ -24,6 +24,7 @@
        (a/customer-wire->internal)))
 
 (s/defn add-customer
-  [customer :- m/Customer
+  [{:customer/keys [tax-id] :as customer} :- m/Customer
    db :- db-client/IDatabaseClient]
-  (db-client/transact-entity! db [customer]))
+  (when (empty? (get-customer tax-id db))
+    (db-client/transact-entity! db [customer])))

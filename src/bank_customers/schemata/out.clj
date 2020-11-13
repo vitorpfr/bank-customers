@@ -10,3 +10,5 @@
 (def TaxIds (s/pred json-string?))
 
 (def Customer (s/pred json-string?))
+
+(def CustomerOperation (s/pred json-string?))

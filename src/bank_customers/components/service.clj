@@ -7,15 +7,19 @@
             [bank-customers.schemata.in :as schemata-in]
             [schema.core :as s]))
 
-(defn- success [body-content]
+(defn ^:private success [body-content]
   {:status  200
    :headers {"Content-Type" "application/json"}
    :body    body-content})
 
-; TODO: move s/validates to a try/catch and returns bad-request if any of them fails
-(defn- bad-request [missing-input]
-  {:status  400
-   :body    {:error (str "Input " missing-input " was not provided")}})
+(def ^:private bad-request
+  {:status 400
+   :body   "A tax-id is not in the request"})
+
+;TODO: move s/validates to a try/catch and returns bad-request if any of them fails
+;(defn- bad-request [missing-input]
+;  {:status  400
+;   :body    {:error (str "Input " missing-input " was not provided")}})
 
 (defn customers-handler
   [db _]
@@ -29,7 +33,7 @@
    {{tax-id :tax-id} :params}]
   (s/validate schemata-in/TaxId tax-id)
   (-> (c/get-customer tax-id db)
-      a/customer-internal->wire
+      a/customer-operation-internal->wire
       success))
 
 ; should I use s/validate here or validate user input somewhere else?
@@ -39,12 +43,13 @@
   (s/validate schemata-in/Name name)
   (s/validate schemata-in/Email email)
   (s/validate schemata-in/TaxId tax-id)
-  (-> (c/add-customer {:customer/name name
-                       :customer/email email
+  (-> (c/add-customer {:customer/name   name
+                       :customer/email  email
                        :customer/tax-id tax-id}
                       db)
-      a/customer-internal->wire
-      success))
+      a/customer-operation-internal->wire
+      success)
+  )
 
 (defn app-routes
   [db]
