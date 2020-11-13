@@ -12,13 +12,13 @@
    :headers {"Content-Type" "application/json"}
    :body    body-content})
 
-(defn ^:private bad-request [message]
+(defn ^:private bad-request [body-content]
   {:status 400
-   :body   message})
+   :body   body-content})
 
-(defn ^:private unprocessable-entity [message]
+(defn ^:private unprocessable-entity [body-content]
   {:status 422
-   :body   message})
+   :body   body-content})
 
 (defn validate-user-inputs
   [validation-map]
