@@ -7,7 +7,7 @@
 
 (use-fixtures :once s.test/validate-schemas)
 
-(defn- json=
+(defn ^:private json=
   "Validates if expected matches result content, when result is in a json format"
   [expected result]
   (= expected (json/read-str result)))

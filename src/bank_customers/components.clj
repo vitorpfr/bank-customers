@@ -4,14 +4,14 @@
             [bank-customers.components.http-server :as http-server]
             [bank-customers.components.service :as service]))
 
-(defn new-system
+(defn ^:private new-system
   [env {:keys [server-port db-uri]}]
   (component/system-map
     :db (db/new-db env db-uri)
     :service (component/using (service/new-service) [:db])
     :http-server (component/using (http-server/new-server server-port) [:service])))
 
-(defn system [env system-config]
+(defn ^:private system [env system-config]
   (new-system env (get system-config (keyword env))))
 
 (def system-config

@@ -20,7 +20,7 @@
   {:status 422
    :body   body-content})
 
-(defn validate-user-inputs
+(defn ^:private validate-user-inputs
   [validation-map]
   (reduce-kv (fn [acc input schema]
                (conj acc (try (s/validate schema input)
@@ -28,7 +28,7 @@
              []
              validation-map))
 
-(defn not-valid-user-inputs?
+(defn ^:private not-valid-user-inputs?
   [validation-map]
   (some nil? (validate-user-inputs validation-map)))
 

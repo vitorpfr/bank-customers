@@ -1,7 +1,7 @@
 (ns bank-customers.schemata.in
   (:require [schema.core :as s]))
 
-(defn- valid-tax-id?
+(defn ^:private valid-tax-id?
   [tax-id]
   (and (string? tax-id)
        (every? #(Character/isDigit %) tax-id)
@@ -12,7 +12,7 @@
 (s/defschema TaxIds (s/both [[(s/one TaxId "s")]]
                             (s/pred vector?)))
 
-(defn- valid-email?
+(defn ^:private valid-email?
   [email]
   (re-find #"@.*?\." email))
 

@@ -19,17 +19,17 @@
     :db/cardinality :db.cardinality/one
     :db/doc         "Tax id of a customer"}])
 
-(defn connect-to-empty-in-memory-db [uri]
+(defn ^:private connect-to-empty-in-memory-db [uri]
   (d/delete-database uri)
   (d/create-database uri)
   (let [conn (d/connect uri)]
     (d/transact conn customer-schema)
     conn))
 
-(defn connect-to-prod-db [uri]
+(defn ^:private connect-to-prod-db [uri]
   (d/connect uri))
 
-(defn connect-to-db
+(defn ^:private connect-to-db
   [env uri]
   (case env
     :test (connect-to-empty-in-memory-db uri)

@@ -2,7 +2,7 @@
   (:require [schema.core :as s]
             [clojure.data.json :as json]))
 
-(defn json-string?
+(defn ^:private json-string?
   [s]
   (try (json/read-str s)
        (catch Exception _)))
