@@ -23,3 +23,7 @@
 (s/defn customer-internal->wire :- schemata-out/Customer
   [customer :- m/Customer]
   (json/write-str customer))
+
+(s/defn customer-operation-internal->wire :- schemata-out/CustomerOperation
+  [customer-op :- m/CustomerOperation]
+  (json/write-str customer-op))
