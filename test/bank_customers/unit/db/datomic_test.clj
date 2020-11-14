@@ -8,6 +8,7 @@
   (:import (clojure.lang ExceptionInfo)))
 
 (def test-server (atom nil))
+(defn get-db [test-server] (:db @test-server))
 
 (defn with-test-server [f]
   (reset! test-server (components/start-system :test))
@@ -19,50 +20,59 @@
 
 (deftest get-customers-tax-id
   (testing "function call returns all tax-ids stored in db at that moment"
-    (let [db (:db @test-server)]
-      (is (= (ddb/get-customers-tax-ids db)
-             {:tax-ids ()}))
+    (is (= (ddb/get-customers-tax-ids (get-db test-server))
+           {:tax-ids ()}))
 
-      (ddb/add-customer {:customer/name   "John"
-                         :customer/email  "john@gmail.com"
-                         :customer/tax-id "12345678913"}
-                        db)
+    (ddb/add-customer {:customer/name   "John"
+                       :customer/email  "john@gmail.com"
+                       :customer/tax-id "12345678913"}
+                      (get-db test-server))
 
-      (is (= (ddb/get-customers-tax-ids db)
-             {:tax-ids ["12345678913"]})))))
+    (is (= (ddb/get-customers-tax-ids (get-db test-server))
+           {:tax-ids ["12345678913"]}))))
 
 (deftest get-customer
   (testing "function call returns desired customer"
-    (let [db (:db @test-server)]
-      (ddb/add-customer {:customer/name   "John"
-                         :customer/email  "john@gmail.com"
-                         :customer/tax-id "12345678912"}
-                        db)
-      (is (= (ddb/get-customer "12345678955" db)
-             {}))
+    (ddb/add-customer {:customer/name   "John"
+                       :customer/email  "john@gmail.com"
+                       :customer/tax-id "12345678912"}
+                      (get-db test-server))
 
-      (is (= (ddb/get-customer "12345678912" db)
-             {:customer/name   "John"
-              :customer/email  "john@gmail.com"
-              :customer/tax-id "12345678912"})))))
+    (is (= (ddb/get-customer "12345678955" (get-db test-server))
+           {}))
+
+    (is (= (ddb/get-customer "12345678912" (get-db test-server))
+           {:customer/name   "John"
+            :customer/email  "john@gmail.com"
+            :customer/tax-id "12345678912"}))))
 
 (deftest add-customer
-  (testing "throws exception if added customer is incomplete"
-    (let [db (:db @test-server)]
-      (is (thrown-with-msg?
-            ExceptionInfo
-            #"Input to ([^\s]+) does not match schema"
-            (ddb/add-customer {:customer/name   "John"
-                               :customer/email  "john@gmail.com"}
-                              db)))))
+  (testing "throws exception if added customer is invalid"
+    (is (thrown-with-msg?
+          ExceptionInfo
+          #"Input to ([^\s]+) does not match schema"
+          (ddb/add-customer {:customer/name  "John"
+                             :customer/email "john@gmail.com"}
+                            (get-db test-server)))))
 
   (testing "db is modified successfully with new added customer"
-    (let [db (:db @test-server)
-          db-after-transaction (-> (ddb/add-customer {:customer/name   "John"
-                                                      :customer/email  "john@gmail.com"
-                                                      :customer/tax-id "12345678914"}
-                                                     db)
-                                   deref
-                                   :db-after)]
-      (is (= (d/db (:connection db))
-             db-after-transaction)))))
+    (let [db-on-transaction-response (:db-after @(ddb/add-customer {:customer/name   "John"
+                                                                    :customer/email  "john@gmail.com"
+                                                                    :customer/tax-id "12345678914"}
+                                                                   (get-db test-server)))
+          db-consulted-after-transaction (d/db (get-in @test-server [:db :connection]))]
+      (is (= db-on-transaction-response
+             db-consulted-after-transaction))))
+
+  (testing "db is not modified if customer already exists in there"
+    (let [db-consulted-before-transaction (d/db (get-in @test-server [:db :connection]))
+          transaction-response (ddb/add-customer {:customer/name   "John"
+                                                  :customer/email  "john@gmail.com"
+                                                  :customer/tax-id "12345678914"}
+                                                 (get-db test-server))
+          db-consulted-after-transaction (d/db (get-in @test-server [:db :connection]))
+          ]
+      (is (= db-consulted-before-transaction
+             db-consulted-after-transaction))
+
+      (is (nil? transaction-response)))))
