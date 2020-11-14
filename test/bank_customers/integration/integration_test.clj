@@ -18,10 +18,8 @@
 
 (deftest add-and-get-all-customers
   (testing "customers http request on empty db returns JSON with no tax-ids"
-    (let [response (-> (client/request {:url    (aux/test-url "customers")
-                                        :method :get})
-                       deref)]
-      (println (:http-server @test-server))
+    (let [response @(client/request {:url    (aux/test-url "customers")
+                                     :method :get})]
       (is (= 200
              (:status response)))
       (is (= {:tax-ids []}
@@ -31,12 +29,10 @@
     (let [valid-customer {:name   "Peter Parker"
                           :email  "peter@gmail.com"
                           :tax-id "12345655599"}
-          response (-> (client/request {:url     (aux/test-url "addcustomer")
-                                        :method  :post
-                                        :headers {"Content-Type" "application/json"}
-                                        :body    (aux/write-json valid-customer)})
-                       deref)]
-      (println response)
+          response @(client/request {:url     (aux/test-url "addcustomer")
+                                     :method  :post
+                                     :headers {"Content-Type" "application/json"}
+                                     :body    (aux/write-json valid-customer)})]
       (is (= 200
              (:status response)))
       (is (= {:customer {:name   "Peter Parker"
@@ -46,9 +42,8 @@
              (aux/read-json (:body response))))))
 
   (testing "customers http request on db returns JSON with one tax-id"
-    (let [response (-> (client/request {:url    (aux/test-url "customers")
-                                        :method :get})
-                       deref)]
+    (let [response @(client/request {:url    (aux/test-url "customers")
+                                     :method :get})]
       (is (= 200
              (:status response)))
       (is (= {:tax-ids ["12345655599"]}
@@ -56,9 +51,8 @@
 
 (deftest add-and-get-specific-customer
   (testing "get customer http request returns empty JSON for non-existing customer"
-    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
-                                        :method :get})
-                       deref)]
+    (let [response @(client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
+                                     :method :get})]
       (is (= 200
              (:status response)))
       (is (= {:customer {}
@@ -69,12 +63,10 @@
     (let [valid-customer {:customer/name   "John"
                           :customer/email  "john@gmail.com"
                           :customer/tax-id "12345678912"}
-          response (-> (client/request {:url     (aux/test-url "addcustomer")
-                                        :method  :post
-                                        :headers {"Content-Type" "application/json"}
-                                        :body    (aux/write-json valid-customer)})
-                       deref)]
-      (println response)
+          response @(client/request {:url     (aux/test-url "addcustomer")
+                                     :method  :post
+                                     :headers {"Content-Type" "application/json"}
+                                     :body    (aux/write-json valid-customer)})]
       (is (= 200
              (:status response)))
       (is (= {:customer {:name   "John"
@@ -84,9 +76,8 @@
              (aux/read-json (:body response))))))
 
   (testing "get customer HTTP request returns data of existing tax-id asked"
-    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
-                                        :method :get})
-                       deref)]
+    (let [response @(client/request {:url    (aux/test-url "customer" "?tax-id=12345678912")
+                                     :method :get})]
       (is (= 200
              (:status response)))
       (is (= {:customer {:email  "john@gmail.com"
@@ -95,21 +86,18 @@
               :result   "is-customer"}
              (aux/read-json (:body response)))))))
 
-
 (deftest invalid-customer-consult
   (testing "trying to consult customer without providing a tax-id returns error"
-    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tx-id=12345678912")
-                                        :method :get})
-                       deref)]
+    (let [response @(client/request {:url    (aux/test-url "customer" "?tx-id=12345678912")
+                                     :method :get})]
       (is (= 400
              (:status response)))
       (is (= "A customer tax-id was not provided."
              (:body response)))))
 
   (testing "trying to consult customer with an invalid tax-id returns error"
-    (let [response (-> (client/request {:url    (aux/test-url "customer" "?tax-id=178912")
-                                        :method :get})
-                       deref)]
+    (let [response @(client/request {:url    (aux/test-url "customer" "?tax-id=178912")
+                                     :method :get})]
       (is (= 422
              (:status response)))
       (is (= "The tax-id provided is not valid (it must have 11 numerical digits)."
@@ -119,12 +107,10 @@
   (testing "trying to add customer with missing data returns error"
     (let [customer-missing-data {:name  "Peter Parker"
                                  :email "peter@gmail.com"}
-          response (-> (client/request {:url     (aux/test-url "addcustomer")
-                                        :method  :post
-                                        :headers {"Content-Type" "application/json"}
-                                        :body    (aux/write-json customer-missing-data)})
-                       deref)]
-      (println response)
+          response @(client/request {:url     (aux/test-url "addcustomer")
+                                     :method  :post
+                                     :headers {"Content-Type" "application/json"}
+                                     :body    (aux/write-json customer-missing-data)})]
       (is (= 400
              (:status response)))
       (is (= "One or more of the required fields (name, email, tax-id) was not provided."
@@ -134,12 +120,10 @@
     (let [invalid-customer {:name   "Peter Parker"
                             :email  "peter@gmail.com"
                             :tax-id "12345678"}
-          response (-> (client/request {:url     (aux/test-url "addcustomer")
-                                        :method  :post
-                                        :headers {"Content-Type" "application/json"}
-                                        :body    (aux/write-json invalid-customer)})
-                       deref)]
-      (println response)
+          response @(client/request {:url     (aux/test-url "addcustomer")
+                                     :method  :post
+                                     :headers {"Content-Type" "application/json"}
+                                     :body    (aux/write-json invalid-customer)})]
       (is (= 422
              (:status response)))
       (is (= "One or more of the required fields (name, email, tax-id) was provided in an invalid format."

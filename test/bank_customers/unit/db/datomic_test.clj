@@ -19,9 +19,7 @@
 
 (deftest get-customers-tax-id
   (testing "function call returns all tax-ids stored in db at that moment"
-    (let [db (-> test-server
-                 deref
-                 :db)]
+    (let [db (:db @test-server)]
       (is (= (ddb/get-customers-tax-ids db)
              {:tax-ids ()}))
 
@@ -35,9 +33,7 @@
 
 (deftest get-customer
   (testing "function call returns desired customer"
-    (let [db (-> test-server
-                 deref
-                 :db)]
+    (let [db (:db @test-server)]
       (ddb/add-customer {:customer/name   "John"
                          :customer/email  "john@gmail.com"
                          :customer/tax-id "12345678912"}
@@ -52,9 +48,7 @@
 
 (deftest add-customer
   (testing "throws exception if added customer is incomplete"
-    (let [db (-> test-server
-                 deref
-                 :db)]
+    (let [db (:db @test-server)]
       (is (thrown-with-msg?
             ExceptionInfo
             #"Input to ([^\s]+) does not match schema"
@@ -63,9 +57,7 @@
                               db)))))
 
   (testing "db is modified successfully with new added customer"
-    (let [db (-> test-server
-                 deref
-                 :db)
+    (let [db (:db @test-server)
           db-after-transaction (-> (ddb/add-customer {:customer/name   "John"
                                                       :customer/email  "john@gmail.com"
                                                       :customer/tax-id "12345678914"}
@@ -74,5 +66,3 @@
                                    :db-after)]
       (is (= (d/db (:connection db))
              db-after-transaction)))))
-
-

@@ -37,6 +37,11 @@
     (is (thrown-with-msg?
           ExceptionInfo
           #"Input to ([^\s]+) does not match schema"
+          (a/tax-ids-wire->internal {})))
+
+    (is (thrown-with-msg?
+          ExceptionInfo
+          #"Input to ([^\s]+) does not match schema"
           (a/tax-ids-wire->internal [["12345678911" "51345678911"] ["21345678911"]]))))
 
   (testing "wire tax-id list from DB is converted to internal tax-id list"
@@ -75,7 +80,12 @@
     (is (thrown-with-msg?
           ExceptionInfo
           #"Input to ([^\s]+) does not match schema"
-          (a/customer-wire->internal nil))))
+          (a/customer-wire->internal nil)))
+
+    (is (thrown-with-msg?
+          ExceptionInfo
+          #"Input to ([^\s]+) does not match schema"
+          (a/customer-wire->internal {}))))
 
   (testing "wire customer from DB is converted to internal customer"
     (is (= {:customer/name   "Joseph"
@@ -94,3 +104,14 @@
                (a/customer-internal->wire {:customer/name   "Joseph"
                                            :customer/email  "joseph@gmail.com"
                                            :customer/tax-id "12398745611"})))))
+
+(deftest customer-operation-test
+  (testing "internal customer operation is converted to wire successfully"
+    (is (json= {"customer" {"name"   "Joseph"
+                            "email"  "joseph@gmail.com"
+                            "tax-id" "12398745611"}
+                "result"   "some-result"}
+               (a/customer-operation-internal->wire {:customer {:customer/name   "Joseph"
+                                                                :customer/email  "joseph@gmail.com"
+                                                                :customer/tax-id "12398745611"}
+                                                     :result   :some-result})))))
