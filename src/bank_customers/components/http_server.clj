@@ -6,7 +6,6 @@
 
 (defrecord HttpServer [port http-server service]
   component/Lifecycle
-
   (start [this]
     (let [app-routes (:service-routes service)
           server (-> app-routes

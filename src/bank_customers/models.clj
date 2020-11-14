@@ -3,7 +3,6 @@
 
 (def Name s/Str)
 (def Email s/Str)
-
 (def TaxId s/Str)
 
 (s/defschema TaxIds
