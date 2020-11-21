@@ -1,4 +1,4 @@
-(ns bank-customers.components.service
+(ns bank-customers.service
   (:require [com.stuartsierra.component :as component]
             [compojure.route :as comp-route]
             [compojure.core :as comp-core]
