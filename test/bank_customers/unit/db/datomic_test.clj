@@ -23,20 +23,20 @@
     (is (= (ddb/get-customers-tax-ids (get-db test-server))
            {:tax-ids ()}))
 
-    (ddb/add-customer {:customer/name   "John"
+    (ddb/add-customer! {:customer/name  "John"
                        :customer/email  "john@gmail.com"
                        :customer/tax-id "12345678913"}
-                      (get-db test-server))
+                       (get-db test-server))
 
     (is (= (ddb/get-customers-tax-ids (get-db test-server))
            {:tax-ids ["12345678913"]}))))
 
 (deftest get-customer
   (testing "function call returns desired customer"
-    (ddb/add-customer {:customer/name   "John"
+    (ddb/add-customer! {:customer/name  "John"
                        :customer/email  "john@gmail.com"
                        :customer/tax-id "12345678912"}
-                      (get-db test-server))
+                       (get-db test-server))
 
     (is (= (ddb/get-customer "12345678955" (get-db test-server))
            {}))
@@ -51,25 +51,25 @@
     (is (thrown-with-msg?
           ExceptionInfo
           #"Input to ([^\s]+) does not match schema"
-          (ddb/add-customer {:customer/name  "John"
+          (ddb/add-customer! {:customer/name "John"
                              :customer/email "john@gmail.com"}
-                            (get-db test-server)))))
+                             (get-db test-server)))))
 
   (testing "db is modified successfully with new added customer"
-    (let [db-on-transaction-response (:db-after @(ddb/add-customer {:customer/name   "John"
+    (let [db-on-transaction-response (:db-after @(ddb/add-customer! {:customer/name  "John"
                                                                     :customer/email  "john@gmail.com"
                                                                     :customer/tax-id "12345678914"}
-                                                                   (get-db test-server)))
+                                                                    (get-db test-server)))
           db-consulted-after-transaction (d/db (get-in @test-server [:db :connection]))]
       (is (= db-on-transaction-response
              db-consulted-after-transaction))))
 
   (testing "db is not modified if customer already exists in there"
     (let [db-consulted-before-transaction (d/db (get-in @test-server [:db :connection]))
-          transaction-response (ddb/add-customer {:customer/name   "John"
+          transaction-response (ddb/add-customer! {:customer/name  "John"
                                                   :customer/email  "john@gmail.com"
                                                   :customer/tax-id "12345678914"}
-                                                 (get-db test-server))
+                                                  (get-db test-server))
           db-consulted-after-transaction (d/db (get-in @test-server [:db :connection]))
           ]
       (is (= db-consulted-before-transaction

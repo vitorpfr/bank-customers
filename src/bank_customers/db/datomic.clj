@@ -23,7 +23,7 @@
        (db-client/query-with-arg db tax-id)
        (a/customer-wire->internal)))
 
-(s/defn add-customer
+(s/defn add-customer!
   [{:customer/keys [tax-id] :as customer} :- m/Customer
    db :- db-client/IDatabaseClient]
   (when (empty? (get-customer tax-id db))

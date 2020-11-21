@@ -13,14 +13,14 @@
    db :- db-client/IDatabaseClient]
   (let [customer (ddb/get-customer tax-id db)
         response {:customer customer}]
-    (if (empty? customer)
-      (assoc response :result :customer-not-found)
-      (assoc response :result :is-customer))))
+    (assoc response :result (if (empty? customer)
+                              :customer-not-found
+                              :is-customer))))
 
-(s/defn add-customer :- m/CustomerOperation
+(s/defn add-customer! :- m/CustomerOperation
   [customer :- m/Customer
    db :- db-client/IDatabaseClient]
   (let [response {:customer customer}]
-    (if (ddb/add-customer customer db)
-      (assoc response :result :customer-added-to-db)
-      (assoc response :result :customer-already-exists-in-db))))
+    (assoc response :result (if (ddb/add-customer! customer db)
+                              :customer-added-to-db
+                              :customer-already-exists-in-db))))

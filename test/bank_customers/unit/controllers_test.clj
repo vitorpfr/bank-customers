@@ -45,12 +45,12 @@
       (is (thrown-with-msg?
             ExceptionInfo
             #"Input to ([^\s]+) does not match schema"
-            (c/add-customer valid-customer nil)))
+            (c/add-customer! valid-customer nil)))
 
       (is (thrown-with-msg?
             ExceptionInfo
             #"Input to ([^\s]+) does not match schema"
-            (c/add-customer invalid-customer (get-db test-server))))))
+            (c/add-customer! invalid-customer (get-db test-server))))))
 
   (testing "returns confirmation of provided customer added to db"
     (let [valid-customer {:customer/name   "John"
@@ -58,7 +58,7 @@
                           :customer/tax-id "12345678912"}]
       (is (= {:customer valid-customer
               :result   :customer-added-to-db}
-             (c/add-customer valid-customer (get-db test-server))))))
+             (c/add-customer! valid-customer (get-db test-server))))))
 
   (testing "returns customer-already-exists results if trying to add again the same customer"
     (let [valid-customer {:customer/name   "John"
@@ -66,7 +66,7 @@
                           :customer/tax-id "12345678912"}]
       (is (= {:customer valid-customer
               :result   :customer-already-exists-in-db}
-             (c/add-customer valid-customer (get-db test-server)))))))
+             (c/add-customer! valid-customer (get-db test-server)))))))
 
 (deftest get-customer-test
   (testing "throws exception if not provided a valid db or tax-id"
@@ -88,7 +88,7 @@
     (let [valid-customer {:customer/name   "John"
                           :customer/email  "john@gmail.com"
                           :customer/tax-id "12345678912"}]
-      (c/add-customer valid-customer (get-db test-server))
+      (c/add-customer! valid-customer (get-db test-server))
       (is (= {:customer valid-customer
               :result   :is-customer}
              (c/get-customer (:customer/tax-id valid-customer) (get-db test-server))))))

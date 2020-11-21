@@ -66,10 +66,10 @@
     (unprocessable-entity "One or more of the required fields (name, email, tax-id) was provided in an invalid format.")
 
     :else
-    (-> (c/add-customer {:customer/name   name
+    (-> (c/add-customer! {:customer/name  name
                          :customer/email  email
                          :customer/tax-id tax-id}
-                        db)
+                         db)
         a/customer-operation-internal->wire
         success)))
 
