@@ -42,26 +42,36 @@
   [db
    {{tax-id :tax-id} :params}]
   (cond
-    (nil? tax-id) (bad-request "A customer tax-id was not provided.")
-    (not-valid-user-inputs? {tax-id schemata-in/TaxId}) (unprocessable-entity "The tax-id provided is not valid (it must have 11 numerical digits).")
-    :else (-> (c/get-customer tax-id db)
-              a/customer-operation-internal->wire
-              success)))
+    (nil? tax-id)
+    (bad-request "A customer tax-id was not provided.")
+
+    (not-valid-user-inputs? {tax-id schemata-in/TaxId})
+    (unprocessable-entity "The tax-id provided is not valid (it must have 11 numerical digits).")
+
+    :else
+    (-> (c/get-customer tax-id db)
+        a/customer-operation-internal->wire
+        success)))
 
 (defn add-customer-handler
   [db
    {{:keys [name email tax-id]} :body}]
   (cond
-    (some nil? [name email tax-id]) (bad-request "One or more of the required fields (name, email, tax-id) was not provided.")
+    (some nil? [name email tax-id])
+    (bad-request "One or more of the required fields (name, email, tax-id) was not provided.")
+
     (not-valid-user-inputs? {name   schemata-in/Name
                              email  schemata-in/Email
-                             tax-id schemata-in/TaxId}) (unprocessable-entity "One or more of the required fields (name, email, tax-id) was provided in an invalid format.")
-    :else (-> (c/add-customer {:customer/name   name
-                               :customer/email  email
-                               :customer/tax-id tax-id}
-                              db)
-              a/customer-operation-internal->wire
-              success)))
+                             tax-id schemata-in/TaxId})
+    (unprocessable-entity "One or more of the required fields (name, email, tax-id) was provided in an invalid format.")
+
+    :else
+    (-> (c/add-customer {:customer/name   name
+                         :customer/email  email
+                         :customer/tax-id tax-id}
+                        db)
+        a/customer-operation-internal->wire
+        success)))
 
 (defn app-routes
   [db]
