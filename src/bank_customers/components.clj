@@ -2,7 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [bank-customers.components.db :as db]
             [bank-customers.components.http-server :as http-server]
-            [bank-customers.components.service :as service]))
+            [bank-customers.service :as service]))
 
 (defn ^:private new-system
   [env {:keys [server-port db-uri]}]
